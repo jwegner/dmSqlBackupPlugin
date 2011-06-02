@@ -29,11 +29,12 @@ class dmSqlBackup extends dmConfigurable
     return $this;
   }
 
-  public function execute(Doctrine_Connection $connection)
+  public function execute(Doctrine_Connection $connection, $arguments = array(), $options = array())
   {
     $adapter = $this->getAdapter($connection);
     
     $infos  = $adapter->getInfos();
+    $infos['tag'] = dmString::underscore(dmOs::sanitizeFileName($options['tag']));
     $file   = $this->getFile($infos);
     
     $this->log(sprintf('About to backup %s@%s to %s', $infos['name'], $infos['host'], $file));
@@ -55,13 +56,22 @@ class dmSqlBackup extends dmConfigurable
 
   protected function getFile(array $infos)
   {
-    $fileName = strtr($this->getOption('file_format'), array(
+    $file_format_values = array(
       '%db_name%' => $infos['name'],
       '%year%'    => date('Y'),
       '%month%'   => date('m'),
       '%day%'     => date('d'),
       '%time%'    => date('H-i-s')
-    ));
+    );
+      
+    if (!empty($infos['tag'])) {
+      $file_format = $this->getOption('file_format');
+      $file_format_values = array_merge($file_format_values, array('%tag%' => $infos['tag']));
+    } else {
+      $file_format = str_replace('-%tag%', '', $this->getOption('file_format'));
+    }
+    
+    $fileName = strtr($file_format, $file_format_values);
 
     return dmOs::join($this->getOption('dir'), $fileName);
   }

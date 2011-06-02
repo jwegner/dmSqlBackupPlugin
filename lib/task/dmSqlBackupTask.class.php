@@ -12,7 +12,7 @@ class dmSqlBackupTask extends dmContextTask
 
     $this->addOptions(array(
 //      new sfCommandOption('module', null, sfCommandOption::PARAMETER_REQUIRED, 'The module name'),
-//      new sfCommandOption('nb', null, sfCommandOption::PARAMETER_OPTIONAL, 'nb records to create', 20),
+      new sfCommandOption('tag', null, sfCommandOption::PARAMETER_OPTIONAL, 'add a tag name to the backups file name', ''),
     ));
 
     $this->namespace = 'dm';
@@ -33,7 +33,7 @@ class dmSqlBackupTask extends dmContextTask
 
     $this->get('sql_backup')
     ->setLogCallable(array($this, 'customLog'))
-    ->execute($connection);
+    ->execute($connection, $arguments, $options);
   }
 
   public function customLog($msg)
